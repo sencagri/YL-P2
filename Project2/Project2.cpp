@@ -14,9 +14,14 @@ using namespace std;
 
 int main()
 {
-	Mat image = imread("c:\\fig309.tif", IMREAD_GRAYSCALE);
+	// Get command from user
+	int cmd = 0;
+
+	Mat image = imread("c:\\fig323.tif", IMREAD_GRAYSCALE);
 	
 	showHist(image);
+	//histEqualize(image);
+	
 
 	waitKey(0);
 	getchar();
