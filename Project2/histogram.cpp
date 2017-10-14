@@ -15,10 +15,11 @@ using namespace cv;
 
 vector<float> * GetImageHist(Mat & image);
 
-void PlotHistData(Mat &image, vector<float> * histP)
+void PlotHistData(Mat &image, vector<float> * histP, Mat & result)
 {
 	vector<float> hist = *histP;
-	// normalize the hist data for fast processing
+
+	// Normalize the hist data for fast processing
 	int sizeHist = hist.size();
 	int maxVal(0);
 
@@ -47,13 +48,14 @@ void PlotHistData(Mat &image, vector<float> * histP)
 	}
 
 	rotate(histImage, histImage, ROTATE_90_COUNTERCLOCKWISE);
+	
 
 	delete histP;
 
-	imshow("Histogram Image", histImage);
+	result = histImage;
 }
 
-void ShowHist(Mat & image)
+void ShowHist(Mat & image, Mat & result)
 {
 	// histogram array to store
 	//float hist[256] = { 0 };
@@ -65,16 +67,16 @@ void ShowHist(Mat & image)
 	}
 	else
 	{
-		PlotHistData(image, GetImageHist(image));
+		PlotHistData(image, GetImageHist(image), result);
 	}
 }
 
 vector<float> * GetImageHist(Mat & image)
 {
-	uchar *p;
+	uchar *p(NULL);
 	int depth = image.depth();
 	int vectorSize = pow(2, depth);
-	vector<float> * hist = new vector<float>(vectorSize);
+	vector<float> * hist = new vector<float>(256);
 
 	for (unsigned int i = 0; i < image.rows; i++)
 	{
@@ -87,6 +89,8 @@ vector<float> * GetImageHist(Mat & image)
 		}
 	}
 
+	//delete p;
+
 	return hist;
 }
 
@@ -94,7 +98,7 @@ vector<float> * GetHistEqualizerFunc(Mat & image)
 {
 	// Get histogram of input image
 	vector<float> * HHr = GetImageHist(image);
-	vector<float> * PPr_k = new vector<float>[HHr->size()];
+	vector<float> * PPr_k = new vector<float>(HHr->size());
 	
 	// Create probablity function from input image histogram
 	// Now hist points to -----> p(r_k)
@@ -106,20 +110,52 @@ vector<float> * GetHistEqualizerFunc(Mat & image)
 	
 	// Create array for histogram equalizer function with same size as histogram array of input image
 	// Now PPs_k points to ----> p(s_k)
-	vector<float> * PPs_k = new vector<float>[PPr_k->size()];
+	vector<float> * PPs_k = new vector<float>(PPr_k->size());
 
 	// maxIntensity is points to (L - 1)
-	unsigned int maxIntensity = pow(2, image.depth()) - 1;
-
+	unsigned int maxIntensity = 255; 
+	
 	for (unsigned int i = 0; i < PPs_k->size(); i++)
 	{
 		// Integral from 0 to i value s(k) = T(r) = (L - 1) * sum(p(k))
 		float sumOfProb(0);
-		PPs_k->at(i) = maxIntensity * 
+		for (unsigned int j = 0; j <= i; j++)
+		{
+			sumOfProb += PPr_k->at(j);
+		}
+
+		PPs_k->at(i) = round((maxIntensity * sumOfProb));
+
+		// Clear integral var
+		sumOfProb = 0;
 	}
 
+	// Delete unused vectors
+	delete PPr_k;
 
+	// Now wekcan return transformation function
+	return PPs_k;
 }
 
+void EqualizeImageHist(Mat & image, Mat & resImg)
+{
+	vector<float> * tranFunc = GetHistEqualizerFunc(image); 
+	Mat result = image.clone();
 
+	uchar * p;
+	uchar * r;
+	for (unsigned int i = 0; i < image.rows; i++)
+	{
+		p = image.ptr<uchar>(i);
+		r = result.ptr<uchar>(i);
 
+		for (unsigned int j = 0; j < image.cols; j++)
+		{
+			int val = p[j];
+			int out = tranFunc->at(val);
+			r[j] = out;
+		}
+	}
+
+	resImg = result;
+}

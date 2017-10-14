@@ -17,11 +17,9 @@ int main()
 	// Get command from user
 	int cmd = 0;
 
-	Mat image = imread("c:\\fig323.tif", IMREAD_GRAYSCALE);
-	
-	showHist(image);
-	//histEqualize(image);
-	
+	Mat image = imread("c:\\fig309.tif", IMREAD_GRAYSCALE);
+
+
 
 	waitKey(0);
 	getchar();
