@@ -13,9 +13,9 @@
 using namespace std;
 using namespace cv;
 
-vector<float> * GetImageHist(Mat & image);
+vector<float> * getHistData(Mat & image);
 
-void PlotHistData(Mat &image, vector<float> * histP)
+void showHistData(Mat &image, vector<float> * histP)
 {
 	vector<float> hist = *histP;
 	// normalize the hist data for fast processing
@@ -53,7 +53,7 @@ void PlotHistData(Mat &image, vector<float> * histP)
 	imshow("Histogram Image", histImage);
 }
 
-void ShowHist(Mat & image)
+void showHist(Mat & image)
 {
 	// histogram array to store
 	//float hist[256] = { 0 };
@@ -65,16 +65,16 @@ void ShowHist(Mat & image)
 	}
 	else
 	{
-		PlotHistData(image, GetImageHist(image));
+		showHistData(image, getHistData(image));
 	}
 }
 
-vector<float> * GetImageHist(Mat & image)
+vector<float> * getHistData(Mat & image)
 {
 	uchar *p;
 	int depth = image.depth();
 	int vectorSize = pow(2, depth);
-	vector<float> * hist = new vector<float>(vectorSize);
+	vector<float> * histResult = new vector<float>(vectorSize);
 
 	for (unsigned int i = 0; i < image.rows; i++)
 	{
@@ -83,40 +83,21 @@ vector<float> * GetImageHist(Mat & image)
 		{
 			// Find value in image(x, y) and increase the related value in the histogram array by one.
 			uchar val = image.at<uchar>(i, j);
-			hist->at(val) = hist->at(val) + 1.0f;
+			histResult->at(val) = histResult->at(val) + 1.0f;
 		}
 	}
 
-	return hist;
+	return histResult;
 }
 
-vector<float> * GetHistEqualizerFunc(Mat & image)
+void histEqualize(Mat & image)
 {
-	// Get histogram of input image
-	vector<float> * HHr = GetImageHist(image);
-	vector<float> * PPr_k = new vector<float>[HHr->size()];
+	vector<float> * hist;
+	hist = getHistData(image);
 	
-	// Create probablity function from input image histogram
-	// Now hist points to -----> p(r_k)
-	int totPixel = image.rows * image.cols;
-	for (unsigned int i = 0; i < HHr->size(); i++)
-	{
-		PPr_k->at(i) = HHr->at(i) / totPixel;
-	}
-	
-	// Create array for histogram equalizer function with same size as histogram array of input image
-	// Now PPs_k points to ----> p(s_k)
-	vector<float> * PPs_k = new vector<float>[PPr_k->size()];
+	int depth = image.depth();
+	int vectorSize = pow(2, depth);
 
-	// maxIntensity is points to (L - 1)
-	unsigned int maxIntensity = pow(2, image.depth()) - 1;
-
-	for (unsigned int i = 0; i < PPs_k->size(); i++)
-	{
-		// Integral from 0 to i value s(k) = T(r) = (L - 1) * sum(p(k))
-		float sumOfProb(0);
-		PPs_k->at(i) = maxIntensity * 
-	}
 
 
 }
