@@ -48,7 +48,6 @@ void runSpatialFilter()
 {
 	Mat image = imread("c:\\fig340.tif", IMREAD_GRAYSCALE);
 	Mat result = image.clone();
-	Mat res;
 
 	// Applying kernel functions
 	float cons(0.0f);
@@ -56,18 +55,19 @@ void runSpatialFilter()
 	cout << "Enter kernel constant" << endl;
 	cin >> cons;
 
+	// Blurrer kernel matrix
 	float val = 1.0f / 9;
 	Mat_<float> kern(3, 3);
-	Mat_<float> kern2(3, 3);
-	Mat_<float> kernSum(3, 3);
-	Mat_<float> kernRes(3, 3);
+	Mat_<float> kern_sum(3, 3);
 
 	kern << val, val, val, val, val, val, val, val, val;
-	kern2 << 0, 0, 0, 0, 1, 0, 0, 0, 0;
-	Mat_<float> resSum= kern2- kern ;
-	multiply(resSum, Scalar(cons), kernRes);
-	kernRes = kern2 + kernRes;
-	applyFilterr(image, kernRes, result);
+	kern_sum << 0, 0, 0, 0, 1, 0, 0, 0, 0;
+
+	kern = kern_sum - kern;
+	multiply(kern, Scalar(cons), kern);
+
+	kern = kern_sum + kern;
+	applyFilterr(image, kern, result);
 
 	imshow("Original Image", image);
 	imshow("Processed Image", result);
@@ -77,8 +77,26 @@ void runSpatialFilter()
 
 void runLagrangian()
 {
-	
+	Mat image = imread("c:\\fig338.tif", IMREAD_GRAYSCALE);
+	Mat result = image.clone();
+	Mat result2 = image.clone();
+
+	Mat_<float> kern(3, 3);
+
+	kern << 0, 1, 0,
+	        1, -4, 1,
+			0, 1, 0;
+
+	applyFilterr(image, kern, result);
+	filter2D(image, result2, 8, kern);
+
+	imshow("Original Image", image);
+	imshow("Processed Image", result);
+	imshow("Processed Image2", result2);
+
+	waitKey(0);
 }
+
 
 int main()
 {

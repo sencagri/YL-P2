@@ -40,7 +40,13 @@ void applyFilterr(Mat & image, Mat_<float> & kernel, Mat & result)
 									(iNext[j] * kernel(2,0)) + (iNext[j + 1] * kernel(2,1)) + (iNext[j + 2] * kernel(2,2));
 
 				// DEBUG PURPOSES ONLY
-				oCurr[j] = static_cast<uchar>(val);
+				/*
+				cout << kernel << endl;
+				cout << val << endl;
+				cout << iPrev[j + 1] * kernel(0, 1) << endl;
+				cout << (iCurr[j + 1] * kernel(1, 1)) << endl;
+				*/
+				oCurr[j] = saturate_cast<uchar>(val);
 			}
 			else
 			{
