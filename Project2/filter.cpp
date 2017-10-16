@@ -1,53 +1,55 @@
-﻿#include <stdio.h>
-#include <iostream>
-#include <direct.h>
-#include <vector>
-
-#include "stdafx.h"
-#include "math.h"
-
+﻿#include "stdafx.h"
 #include "opencv2\opencv.hpp"
-#include "opencv\highgui.h"
 
 using namespace cv;
 using namespace std;
 
-void applyFilter(Mat & image, Mat_<float> kernel, Mat & result)
+void applyFilterr(Mat & image, Mat_<float> & kernel, Mat & result)
 {
-	// This is constant k, points to 𝑔(𝑥,𝑦)=𝑓(𝑥,𝑦)+𝑘 ∗[𝑓(𝑥,𝑦)−𝑓̅(𝑥,𝑦)]
-	float k(0.0);
-	cout << "Enter constant value for spatial filtering";
-	cin >> k;
-
-	uchar * kernelPrevP = kernel.ptr<uchar>(0);
-	uchar * kernelCurrP = kernel.ptr<uchar>(1);
-	uchar * kernelNextP = kernel.ptr<uchar>(2);
-
-	for (unsigned int i = 0; i < image.rows; i++)
+	for (int i = 0; i < image.rows; i++)
 	{
+
 		// Input image row 
+		// i mean Image
+		// Curr, Prev, Next points to Middle, Previous and Next rows
 		uchar * iCurr = image.ptr<uchar>(i);
 		uchar * iPrev(0);
 		uchar * iNext(0);
-		if (i - 1 > -1)
-		{
-			iPrev = image.ptr<uchar>(i - 1);
-		}
-		else if (i + 1 <= image.rows)
-		{
-			iNext = image.ptr<uchar>(i + 1);
-		}
-
+		
 		// Output image row
-		uchar * oCurr = image.ptr<uchar>(i);
+		uchar * oCurr = result.ptr<uchar>(i);
 
-		for (unsigned int j = 0; i < image.cols; j++)
+		// To check we are not out of bounds for candidate kernel matrix
+		bool inbound = false;
+
+		for (int j = 0; j < image.cols; j++)
 		{
-			float val = 1.0f * (iPrev[j] * kernelPrevP[0]) + (iPrev[j + 1] * kernelPrevP[1]) + (iPrev[j + 1] * kernelPrevP[j + 2]) +
-				(iCurr[j] * kernelCurrP[0]) + (iCurr[j + 1] * kernelCurrP[1]) + (iCurr[j + 1] * kernelCurrP[j + 2]) +
-				(iNext[j] * kernelNextP[0]) + (iNext[j + 1] * kernelNextP[1]) + (iNext[j + 1] * kernelNextP[j + 2]);
+			// Checking bounds
+			if((i - 1 >= 0) && (i + 1 < image.rows) && j > 1 && j < image.cols)
+			{
+				iPrev = image.ptr<uchar>(i - 1);
+				iNext = image.ptr<uchar>(i + 1);
+				inbound = true;
+			}
 
-			oCurr[j] = (int)val;
+			if (inbound)
+			{
+				// Apply kernel, by orienting K(x,y) for candiate pixel value
+				float val = 1.0f *  (iPrev[j] * kernel(0,0)) + (iPrev[j + 1] * kernel(0,1)) + (iPrev[j + 2] * kernel(0,2))+
+									(iCurr[j] * kernel(1,0)) + (iCurr[j + 1] * kernel(1,1)) + (iCurr[j + 2] * kernel(1,2))+ 
+									(iNext[j] * kernel(2,0)) + (iNext[j + 1] * kernel(2,1)) + (iNext[j + 2] * kernel(2,2));
+
+				// DEBUG PURPOSES ONLY
+				oCurr[j] = static_cast<uchar>(val);
+			}
+			else
+			{
+				// If we are in out of bound, we have to copy in these points. Otherwise, we may apply 
+				// only matching points by multiplying adjacent Kernel points. This method is not preferred to make code simpler.
+				oCurr[j] = iCurr[j];
+			}
 		}
+
+
 	}
 }

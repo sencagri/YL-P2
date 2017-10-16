@@ -15,7 +15,7 @@ using namespace cv;
 
 vector<float> * GetImageHist(Mat & image);
 
-void PlotHistData(Mat &image, vector<float> * histP, Mat & result)
+void PlotHistData(Mat & image, vector<float> * histP, Mat & result)
 {
 	vector<float> hist = *histP;
 
@@ -49,7 +49,6 @@ void PlotHistData(Mat &image, vector<float> * histP, Mat & result)
 
 	rotate(histImage, histImage, ROTATE_90_COUNTERCLOCKWISE);
 	
-
 	delete histP;
 
 	result = histImage;
@@ -137,9 +136,9 @@ vector<float> * GetHistEqualizerFunc(Mat & image)
 	return PPs_k;
 }
 
-void EqualizeImageHist(Mat & image, Mat & resImg)
+void EqualizeImageHist(Mat & image, Mat & resultImage)
 {
-	vector<float> * tranFunc = GetHistEqualizerFunc(image); 
+	vector<float> * tranFunc = GetHistEqualizerFunc(image);
 	Mat result = image.clone();
 
 	uchar * p;
@@ -157,5 +156,5 @@ void EqualizeImageHist(Mat & image, Mat & resImg)
 		}
 	}
 
-	resImg = result;
+	resultImage = result;
 }
